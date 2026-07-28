@@ -1,0 +1,34 @@
+name: Update LeetCode Ranking
+
+on:
+  workflow_dispatch: # Permite rodar manualmente
+  schedule:
+    - cron: '0 0 * * *' # Roda todos os dias à meia-noite UTC (ajuste se necessário)
+
+jobs:
+  update-ranking:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+  - name: Set up Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: '3.x' # Use a versão do Python que preferirem
+
+  - name: Install dependencies
+    run: pip install PyGithub
+
+  - name: Run ranking script
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Usa o token do GitHub Actions
+      GITHUB_REPOSITORY: ${{ github.repository }} # Pega o nome do repositório automaticamente
+    run: python scripts/generate_ranking.py
+
+  - name: Commit and push changes
+    run: |
+      git config user.name "GitHub Actions Bot"
+      git config user.email "actions@github.com"
+      git add README.md
+      git commit -m "🤖 Atualiza ranking LeetCode" || echo "No changes to commit"
+      git push
